@@ -8,20 +8,20 @@ Using the Ultrasound Presence, People Count and Ambient Noise events. Anytime on
 
 ![Ghost Presentation - Ghost Presentation](https://user-images.githubusercontent.com/21026209/164302067-d414011f-4c09-4166-b51d-be1e0d7c12d2.jpg)
 
-
-## Requirements
-
-1. A CE9.X or RoomOS Webex Device.
-2. Web admin access to the device to uplaod the macro.
-
 ## Setup
 
+### Prerequisites & Dependencies: 
+
+- Webex Device running CE/RoomOS 9.X
+- Web admin access to the device to upload the macro.
+
+
+### Installation Steps:
 1. Download the ``ghost-presentation.js`` file and upload it to your Webex Room devices Macro editor via the web interface.
 2. Configure the Macro by changing the initial values, there are comments explaining each one.
 3. Enable the Macro on the editor.
-
-
-
+ 
+ 
 ## Demo
 
 *For more demos & PoCs like this, check out our [Webex Labs site](https://collabtoolbox.cisco.com/webex-labs).
@@ -35,7 +35,7 @@ All contents are licensed under the MIT license. Please see [license](LICENSE) f
 
 ## Disclaimer
 
-Everything included is for demo and Proof of Concept purposes only. Use of the site is solely at your own risk. This site may contain links to third party content, which we do not warrant, endorse, or assume liability for. These demos are for Cisco Webex usecases, but are not Official Cisco Webex Branded demos.
+Everything included is for demo and Proof of Concept purposes only. Use of the site is solely at your own risk. This site may contain links to third party content, which we do not warrant, endorse, or assume liability for. These demos are for Cisco Webex use cases, but are not Official Cisco Webex Branded demos.
 
 
 ## Questions
