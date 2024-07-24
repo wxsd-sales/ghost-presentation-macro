@@ -187,7 +187,7 @@ function ambientNoiseDectector(event){
     console.log('Ambient Noise Event while monitoring: ' + event)
   }
 
-  if(MONITORING && event < AMBIENT_NOISE_LEVEL){
+  if(MONITORING && event > AMBIENT_NOISE_LEVEL){
     console.log('Ambient Noise triggered, resetting count');
     console.log(event);
     reset();
