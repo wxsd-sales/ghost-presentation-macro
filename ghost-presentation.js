@@ -25,26 +25,28 @@ let POLLING;
 
 // This will create a warning that the presentation will soon
 // end due to no person detection
-function warning(){
+function warning() {
 
-  if (!NOTIFICATIONS){
+  if (!NOTIFICATIONS) {
     return;
   }
 
   xapi.Command.UserInterface.Message.Alert.Display(
-    { Duration: 10,
+    {
+      Duration: 10,
       Title: 'Empty Room Detected',
       Text: 'The current presentations will end due to an empty room'
     });
 
 }
 
-function reset(){
+function reset() {
 
 
-  if(EVENT_COUNTS+1 == NUM_OF_CHECKS && NOTIFICATIONS) {
+  if (EVENT_COUNTS + 1 == NUM_OF_CHECKS && NOTIFICATIONS) {
     xapi.Command.UserInterface.Message.Alert.Display(
-      { Duration: 10,
+      {
+        Duration: 10,
         Title: 'Presence Detected',
         Text: 'Presentation will remain'
       });
@@ -55,11 +57,11 @@ function reset(){
 
 }
 
-function checkPresence(){
+function checkPresence() {
 
   console.log(`Checking status: Counts: ${EVENT_COUNTS} | Max: ${NUM_OF_CHECKS}`)
 
-  if (EVENT_COUNTS == NUM_OF_CHECKS){
+  if (EVENT_COUNTS == NUM_OF_CHECKS) {
     stopPresentations();
     return;
   }
@@ -67,7 +69,7 @@ function checkPresence(){
   EVENT_COUNTS = EVENT_COUNTS + 1;
 
 
-  if (EVENT_COUNTS+1 == NUM_OF_CHECKS ){
+  if (EVENT_COUNTS + 1 == NUM_OF_CHECKS) {
     warning();
   }
 
@@ -76,9 +78,9 @@ function checkPresence(){
 
 
 
-function startMonitoring(){
+function startMonitoring() {
 
-  if(MONITORING){
+  if (MONITORING) {
     console.log('Already monitoring');
     return;
   }
@@ -89,7 +91,7 @@ function startMonitoring(){
 
 }
 
-function stopMonitoring(){
+function stopMonitoring() {
 
   console.log('Presence Monitoring Stopped');
   MONITORING = false;
@@ -98,54 +100,54 @@ function stopMonitoring(){
 
 }
 
-function previewStarted(event){
+function previewStarted(event) {
   console.log('Preview started');
   startMonitoring();
 }
 
-async function previewStopped(event){
+async function previewStopped(event) {
   console.log('Preview stopped');
 
   const presentationState = await xapi.Status.Conference.Presentation.Mode.get();
-  console.log('Conference Presentation State: ' +presentationState);
+  console.log('Conference Presentation State: ' + presentationState);
 
   if (presentationState == 'Off') {
     console.log('No remaining presentations');
     stopMonitoring();
   } else {
     // If we are recevining a remote presentation, disconnect
-    console.log('Presentations present, continute monitoring');    
+    console.log('Presentations present, continute monitoring');
   }
 
 }
 
-function presentationStarted(event){
+function presentationStarted(event) {
   console.log('Presentation started');
   startMonitoring();
 }
 
-async function presentationStopped(event){
+async function presentationStopped(event) {
   console.log('Presentation stopped');
 
   const presentationState = await xapi.Status.Conference.Presentation.LocalInstance.get();
 
-  if (presentationState.length == 0){
+  if (presentationState.length == 0) {
     console.log('No remaining presentations');
     stopMonitoring();
   } else {
-    console.log('Presentations present, continute monitoring'); 
+    console.log('Presentations present, continute monitoring');
   }
 
 }
 
 
-async function stopPresentations(){
+async function stopPresentations() {
 
   console.log('Stopping all presentations')
 
   // Check if we are receiving the presentation remotely or locally
   const presentationState = await xapi.Status.Conference.Presentation.Mode.get();
-  console.log('Conference Presentation State: ' +presentationState);
+  console.log('Conference Presentation State: ' + presentationState);
 
   if (presentationState == 'Off') {
     // If we are not in a call, stop the local presentation
@@ -162,9 +164,9 @@ async function stopPresentations(){
 
 }
 
-function presenceDetector(event){
+function presenceDetector(event) {
 
-  if(MONITORING && event == 'Yes'){
+  if (MONITORING && event == 'Yes') {
     console.log('Presence Detector Event, resetting count');
     console.log(event);
     reset();
@@ -172,55 +174,43 @@ function presenceDetector(event){
 
 }
 
-function peopleCount(event){
+function peopleCount(event) {
 
-  if(MONITORING && event > 0){
+  if (MONITORING && event > 0) {
     console.log('People Count Event, resetting count');
     reset();
   }
 
 }
 
-function ambientNoiseDectector(event){
+function ambientNoiseDectector(event) {
 
-  if ( MONITORING ) {
+  if (MONITORING) {
     console.log('Ambient Noise Event while monitoring: ' + event)
   }
 
-  if(MONITORING && event > AMBIENT_NOISE_LEVEL){
+  if (MONITORING && event > AMBIENT_NOISE_LEVEL) {
     console.log('Ambient Noise triggered, resetting count');
     console.log(event);
     reset();
   }
-  
+
 }
 
 
-// This function will check if a Quad Camera is attach to the system
-// and notifices you if you lack the hardware to count people out of call
-async function enableOutOfCall(){
+async function main() {
 
-  console.log('Checking for Quad Camera')
-  const connectedDevices = await xapi.Status.Peripherals.ConnectedDevice.get();
+  // Check if there is a Quad or Integrated Camera
+  const cameras = await xapi.Status.Cameras.Camera.get();
+  const validCameras = cameras.filter(camera => camera.Model.startsWith('Quad') || camera.Model.startsWith('Integrated'))
 
-  for (let i = 0; i < connectedDevices.length; i++) {
-    if (connectedDevices[i].Name.indexOf('Quad Camera') != -1 ){
-      console.log('Quad Camera found, can count people out of call')
-      xapi.Config.RoomAnalytics.PeopleCountOutOfCall.set('On');
-      return;
-    }
+  // Display warning if no valid cameras were found
+  if (!validCameras) {
+    console.warn('No Quad or Integrated Cameras Found - People Count Out Of Call May Not Work As Expected');
   }
 
-  console.log('No Quad Camera found, cannot count people out of call');
+  // Enable People Count Out Of Call
   xapi.Config.RoomAnalytics.PeopleCountOutOfCall.set('On');
-  return;
-
-}
-
-async function main(){
-
-  // Check for Quad Cam for out of call people count
-  await enableOutOfCall();
 
   // Monitor people count, this may only be available when in a call
   // if there is no Quad Camera attached
@@ -248,4 +238,3 @@ async function main(){
 }
 
 main();
-
